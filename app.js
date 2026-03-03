@@ -314,3 +314,6 @@ window.addEventListener("load", () => {
   navigator.serviceWorker.register("./sw.js");
 });
 }
+
+const yearEl = document.getElementById("year");
+if (yearEl) yearEl.textContent = new Date().getFullYear();
