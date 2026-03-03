@@ -1,0 +1,62 @@
+<html lang="pl"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy"
+content="default-src 'self';
+connect-src 'self' https://air-quality-api.open-meteo.com;
+img-src 'self' data:;
+style-src 'self' 'unsafe-inline';
+script-src 'self';
+base-uri 'self';
+form-action 'self';
+frame-ancestors 'none';
+object-src 'none';
+upgrade-insecure-requests">
+
+<meta name="referrer" content="no-referrer">
+
+<meta http-equiv="Permissions-Policy"
+content="geolocation=(self)">
+  <title>Psik Psik</title>
+
+    <link rel="icon" type="image/png" href="./icons/favicon-96x96.png" sizes="96x96" />
+    <link rel="shortcut icon" href="./icons/favicon.ico" />
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0b5fff">
+
+  <link rel="icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Psik Psik</h1>
+    <p class="sub">Dane: Open‑Meteo</p>
+  </header>
+
+  <main class="card">
+    <section class="row">
+      <button id="btnGeo" type="button">Użyj mojej lokalizacji</button>
+    </section>
+
+    <section class="row">
+      <!-- <input id="city" type="text" placeholder="Wpisz miasto" autocomplete="off"> -->
+      <!-- <button id="btnSearch" type="button">Szukaj</button> -->
+    </section>
+
+    <!-- <ul id="results" class="results"></ul> -->
+
+    <section class="status">
+      <div><strong>Lokalizacja:</strong> <span id="place">—</span></div>
+      <div><strong>Data:</strong> <span id="day">—</span></div>
+      <div><strong>Status:</strong> <span id="msg">Gotowe</span></div>
+    </section>
+
+    <section>
+      <h2>Dzisiaj</h2>
+      <div id="pollen" class="grid"></div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+
+</body></html>
