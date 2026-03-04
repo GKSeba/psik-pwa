@@ -192,7 +192,7 @@ color: rgba(255,255,255,.9);
 /* Kolory kategorii (wspólne dla PM i pyłków) */
 .tile.good, .chip.good { --c:#2e7d32; }
 .tile.fair, .chip.fair { --c:#558b2f; }
-.tile.moderate, .chip.moderate { --c:#f9a825; }
+.tile.moderate, .chip.moderate { --c:#7d8a19; }
 .tile.poor, .chip.poor { --c:#ef6c00; }
 .tile.verypoor, .chip.verypoor { --c:#c62828; }
 .tile.extremelypoor, .chip.extremelypoor { --c:#6a1b9a; }
