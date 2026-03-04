@@ -41,7 +41,6 @@ const DEFAULT_UNITS = {
   alder_pollen: "grains/m³",
   mugwort_pollen: "grains/m³",
   ragweed_pollen: "grains/m³",
-  olive_pollen: "grains/m³",
 };
 
 // ===== 2) Kategorie jakości dla PM (wg tabeli µg/m³) =====
@@ -84,7 +83,6 @@ const POLLEN_THRESHOLDS = {
   alder_pollen: { okMax: 30, alarmFrom: 100, extremeFrom: 300 },
   mugwort_pollen: { okMax: 10, alarmFrom: 30, extremeFrom: 100 },
   ragweed_pollen: { okMax: 5, alarmFrom: 20, extremeFrom: 50 },
-  olive_pollen: { okMax: 15, alarmFrom: 50, extremeFrom: 200 },
 };
 
 // Zwraca: "ok" | "medium" | "alarm" | "extreme"
@@ -188,7 +186,6 @@ async function fetchAirQuality(latitude, longitude) {
       "birch_pollen",
       "grass_pollen",
       "mugwort_pollen",
-      "olive_pollen",
       "ragweed_pollen",
     ].join(","),
   );
@@ -248,7 +245,6 @@ async function loadForLocation({ name, latitude, longitude }) {
     const alder = pickAt(hourly, "alder_pollen", idx);
     const mugwort = pickAt(hourly, "mugwort_pollen", idx);
     const ragweed = pickAt(hourly, "ragweed_pollen", idx);
-    const olive = pickAt(hourly, "olive_pollen", idx);
 
     const tiles = [
       {
@@ -292,12 +288,6 @@ async function loadForLocation({ name, latitude, longitude }) {
         value: ragweed,
         unit: "grains/m³",
         category: pollenCategory("ragweed_pollen", ragweed),
-      },
-      {
-        name: "Oliwka",
-        value: olive,
-        unit: "grains/m³",
-        category: pollenCategory("olive_pollen", olive),
       },
     ];
 
