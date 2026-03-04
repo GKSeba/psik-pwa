@@ -9,6 +9,7 @@ const ui = {
   place: $("place"),
   day: $("day"),
   msg: $("msg"),
+  air: $("air"),
   pollen: $("pollen"),
 };
 
@@ -71,12 +72,6 @@ function pmCategory(pmType, value) {
   return null;
 }
 
-function pollenCategory(value) {
-  const v = Number(value);
-  if (!Number.isFinite(v)) return null;
-  return v > 0 ? "pollen" : null;
-}
-
 const POLLEN_THRESHOLDS = {
   grass_pollen: { okMax: 10, alarmFrom: 50, extremeFrom: 150 },
   birch_pollen: { okMax: 15, alarmFrom: 80, extremeFrom: 400 },
@@ -116,12 +111,12 @@ const categoryLabelPL = {
   pollen: "gr/m³",
   ok: "OK",
   medium: "Kichasz?",
-  alarm: "Leci z nosa",
+  alarm: "Coś swędzi",
   extreme: "Dramat!",
 };
 
-function renderTiles(items) {
-  ui.pollen.innerHTML = items
+function renderTiles(containerEl, items) {
+  containerEl.innerHTML = items
     .map(
       ({ name, value, unit, category }) => `
   <div class="tile ${category ?? ""}">
@@ -130,7 +125,6 @@ function renderTiles(items) {
       ${category ? `<span class="chip ${category}">${categoryLabelPL?.[category] ?? category}</span>` : ``}
     </div>
     <div class="tileValue">${formatValue(value)} <span class="small">${unit ?? ""}</span></div>
-
   </div>
 `,
     )
@@ -227,6 +221,7 @@ function pickAt(hourly, key, idx) {
 async function loadForLocation({ name, latitude, longitude }) {
   const id = ++loadCounter;
   ui.place.textContent = name;
+  ui.air.innerHTML = "";
   ui.pollen.innerHTML = "";
   setMsg(`Pobieram dane… (#${id})`);
 
@@ -249,7 +244,7 @@ async function loadForLocation({ name, latitude, longitude }) {
     const mugwort = pickAt(hourly, "mugwort_pollen", idx);
     const ragweed = pickAt(hourly, "ragweed_pollen", idx);
 
-    const tiles = [
+    const airTiles = [
       {
         name: "PM2.5",
         value: pm25,
@@ -262,6 +257,9 @@ async function loadForLocation({ name, latitude, longitude }) {
         unit: "µg/m³",
         category: pmCategory("pm10", pm10),
       },
+    ];
+
+    const pollenTiles = [
       {
         name: "Trawy",
         value: grass,
@@ -294,7 +292,8 @@ async function loadForLocation({ name, latitude, longitude }) {
       },
     ];
 
-    renderTiles(tiles);
+    renderTiles(ui.air, airTiles);
+    renderTiles(ui.pollen, pollenTiles);
     setMsg("Dane zaktualizowane");
   } catch (e) {
     console.error("loadForLocation error:", e);
