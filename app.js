@@ -57,9 +57,9 @@ function pmCategory(pmType, value) {
   if (pmType === "pm2_5") {
     if (v <= 10) return "good";
     if (v <= 20) return "fair";
-    if (v <= 25) return "moderate";
+    if (v <= 35) return "moderate";
     if (v <= 50) return "poor";
-    if (v <= 75) return "verypoor";
+    if (v <= 100) return "verypoor";
     return "extremelypoor";
   }
 
@@ -110,7 +110,7 @@ const categoryLabelPL = {
   fair: "OK",
   moderate: "W miarę",
   poor: "Kiepsko",
-  verypoor: "Źle!!",
+  verypoor: "Źle!",
   extremelypoor: "Nie wychodź!",
   pollen: "gr/m³",
   ok: "OK",
