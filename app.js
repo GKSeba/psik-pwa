@@ -11,6 +11,10 @@ const ui = {
   msg: $("msg"),
   air: $("air"),
   pollen: $("pollen"),
+  fabToggle: $("fabToggle"),
+  viewNow: $("viewNow"),
+  viewForecast: $("viewForecast"),
+  forecastDays: $("forecastDays"),
 };
 
 let loadCounter = 0;
@@ -171,6 +175,7 @@ async function fetchAirQuality(latitude, longitude) {
   url.searchParams.set("latitude", String(latitude));
   url.searchParams.set("longitude", String(longitude));
   url.searchParams.set("timezone", "auto");
+  url.searchParams.set("forecast_days", "5");
   url.searchParams.set(
     "hourly",
     [
@@ -217,6 +222,78 @@ function pickAt(hourly, key, idx) {
   return arr[idx] ?? null;
 }
 
+//dodany kod
+const POLLEN_KEYS = [
+  "grass_pollen",
+  "birch_pollen",
+  "alder_pollen",
+  "mugwort_pollen",
+  "ragweed_pollen",
+];
+
+const POLLEN_NAME_PL = {
+  grass_pollen: "Trawy",
+  birch_pollen: "Brzoza",
+  alder_pollen: "Olcha",
+  mugwort_pollen: "Bylica",
+  ragweed_pollen: "Ambrozja",
+};
+
+function toISODate(isoDateTime) {
+  return (isoDateTime || "").split("T")[0] || "";
+}
+
+function groupDailyMax(hourly, key) {
+  const times = hourly?.time;
+  const values = hourly?.[key];
+  if (!Array.isArray(times) || !Array.isArray(values)) return new Map();
+
+  const map = new Map(); // date -> max
+  for (let i = 0; i < times.length; i++) {
+    const d = toISODate(times[i]);
+    const v = Number(values[i]);
+    if (!d || !Number.isFinite(v)) continue;
+    const cur = map.get(d);
+    if (cur == null || v > cur) map.set(d, v);
+  }
+  return map;
+}
+
+function renderPollenForecast(days, units) {
+  if (!ui.forecastDays) return;
+
+  const fmtDay = (dateStr) => {
+    // "2026-03-04" -> "04.03"
+    const [y, m, d] = (dateStr || "").split("-");
+    return d && m ? `${d}.${m}` : dateStr;
+  };
+
+  ui.forecastDays.className = "forecastBlock";
+
+  ui.forecastDays.innerHTML = POLLEN_KEYS.map((k) => {
+    const rowTiles = days
+      .map((day) => {
+        const v = day[k];
+        const cat = pollenCategory(k, v); // ok/medium/alarm/extreme
+        return `
+      <div class="miniTile ${cat ?? ""}">
+        <div class="d">${fmtDay(day.date)}</div>
+        <div class="v">${formatValue(v)}</div>
+        <div class="u">${units[k] ?? ""}</div>
+      </div>
+    `;
+      })
+      .join("");
+
+    return `
+    <div>
+      <div class="forecastTitle">${POLLEN_NAME_PL[k]}</div>
+      <div class="forecastRow">${rowTiles}</div>
+    </div>
+  `;
+  }).join("");
+}
+
 // ===== 5) Główna funkcja =====
 async function loadForLocation({ name, latitude, longitude }) {
   const id = ++loadCounter;
@@ -228,6 +305,34 @@ async function loadForLocation({ name, latitude, longitude }) {
   try {
     const data = await fetchAirQuality(latitude, longitude);
     const hourly = data.hourly || {};
+
+    const units = { ...DEFAULT_UNITS, ...(data.hourly_units || {}) };
+
+    // daty na podstawie hourly.time
+    const allDates = [...new Set((hourly.time || []).map(toISODate))].filter(
+      Boolean,
+    );
+    const today = toISODate(new Date().toISOString());
+
+    const dates = allDates
+      .filter((d) => d !== today) // wyrzuć dzisiaj
+      .slice(0, 5);
+
+    // max dzienny dla każdego pyłku
+    const maxMaps = Object.fromEntries(
+      POLLEN_KEYS.map((k) => [k, groupDailyMax(hourly, k)]),
+    );
+
+    // składamy strukturę dni
+    const days = dates.map((date) => {
+      const o = { date };
+      for (const k of POLLEN_KEYS) o[k] = maxMaps[k].get(date) ?? null;
+      return o;
+    });
+
+    // render prognozy
+    renderPollenForecast(days, units);
+
     const idx = pickClosestHourIndex(hourly);
 
     ui.day.textContent = hourly?.time?.[idx] ?? "";
@@ -353,3 +458,41 @@ if ("serviceWorker" in navigator) {
 
 const yearEl = document.getElementById("year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+let showingForecast = false;
+
+function showNow() {
+  showingForecast = false;
+  ui.viewNow.classList.remove("hidden");
+  ui.viewForecast.classList.add("hidden");
+  ui.fabToggle.textContent = "Prognoza";
+  ui.fabToggle.setAttribute("aria-label", "Pokaż prognozę");
+  ui.fabToggle.title = "Prognoza";
+}
+
+function showForecast() {
+  showingForecast = true;
+  ui.viewNow.classList.add("hidden");
+  ui.viewForecast.classList.remove("hidden");
+  ui.fabToggle.textContent = "Wróć";
+  ui.fabToggle.setAttribute("aria-label", "Wróć do ekranu głównego");
+  ui.fabToggle.title = "Wróć";
+}
+
+ui.fabToggle?.addEventListener("click", () => {
+  console.log("FAB CLICK", {
+    fab: !!ui.fabToggle,
+    viewNow: !!ui.viewNow,
+    viewForecast: !!ui.viewForecast,
+  });
+
+  if (!ui.viewNow || !ui.viewForecast) {
+    alert("Brakuje viewNow/viewForecast w HTML (sprawdź id).");
+    return;
+  }
+
+  if (showingForecast) showNow();
+  else showForecast();
+});
+
+showNow();

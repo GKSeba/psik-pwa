@@ -59,14 +59,19 @@ upgrade-insecure-requests"
         <div><strong>Status:</strong> <span id="msg">Gotowe</span></div>
       </section>
 
-      <section>
+      <!-- WIDOK 1: TERAZ -->
+      <section id="viewNow">
         <h2>Stan powietrza</h2>
         <div id="air" class="grid"></div>
+
+        <h2 style="margin-top: 14px">Pyłki</h2>
+        <div id="pollen" class="grid"></div>
       </section>
 
-      <section style="margin-top: 14px">
-        <h2>Pyłki</h2>
-        <div id="pollen" class="grid"></div>
+      <!-- WIDOK 2: PROGNOZA -->
+      <section id="viewForecast" class="hidden">
+        <h2>Pyłki • Kolejne dni</h2>
+        <div id="forecastDays" class="forecastRow"></div>
       </section>
     </main>
     <footer class="footer">
@@ -85,6 +90,15 @@ upgrade-insecure-requests"
         medycznej.
       </div>
     </footer>
+    <button
+      id="fabToggle"
+      class="fab"
+      type="button"
+      aria-label="Pokaż prognozę"
+      title="Prognoza"
+    >
+      Prognoza
+    </button>
     <script src="./app.js"></script>
   </body>
 </html>
