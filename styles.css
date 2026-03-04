@@ -43,24 +43,37 @@ letter-spacing: .2px;
 
 .brand{
 display:flex;
+justify-content:center;
+}
+
+.brand__h1{
+margin: 0;
+display:flex;
 align-items:center;
-justify-content:center;   /* wyśrodkowanie całej pary */
-gap: 12px;
-margin: 30 auto;
+justify-content:center;
 }
 
 .brand__logo{
-width: 70px;
-height: 70px;
-border-radius: 15px;      /* opcjonalnie ładny “rounded” */
-box-shadow: 0 8px 18px rgba(0,0,0,.35);
+height: 95px;   /* dopasuj */
+width: auto;
+display:block;
+margin: 20px;
 }
 
-.brand__title{
-margin: 0;
-font-size: 45px;          /* dopasuj do swojego stylu */
-letter-spacing: .2px;
+/* klasyczny helper do ukrycia tekstu, ale zostawienia go dla czytników */
+.sr-only{
+position:absolute;
+width:1px;
+height:1px;
+padding:0;
+margin:-1px;
+overflow:hidden;
+clip: rect(0,0,0,0);
+white-space:nowrap;
+border:0;
 }
+
+.top .sub{ text-align:center; }
 
 .card{
 max-width: 980px;
