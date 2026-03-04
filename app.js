@@ -108,9 +108,9 @@ function pollenCategory(allergenKey, value) {
 const categoryLabelPL = {
   good: "Super",
   fair: "OK",
-  moderate: "Średnio",
-  poor: "Źle",
-  verypoor: "Nie wychodź!",
+  moderate: "W miarę",
+  poor: "Kiepsko",
+  verypoor: "Źle!!",
   extremelypoor: "Nie wychodź!",
   pollen: "gr/m³",
   ok: "OK",
