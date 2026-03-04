@@ -107,12 +107,12 @@ function pollenCategory(allergenKey, value) {
 }
 
 const categoryLabelPL = {
-  good: "Dobra",
-  fair: "W porządku",
-  moderate: "Umiarkowana",
-  poor: "Zła",
-  verypoor: "Bardzo zła",
-  extremelypoor: "Ekstremalnie zła",
+  good: "Super",
+  fair: "OK",
+  moderate: "Średnio",
+  poor: "Źle",
+  verypoor: "Nie wychodź!",
+  extremelypoor: "Nie wychodź!",
   pollen: "gr/m³",
   ok: "OK",
   medium: "Kichasz?",
@@ -235,7 +235,10 @@ async function loadForLocation({ name, latitude, longitude }) {
     const hourly = data.hourly || {};
     const idx = pickClosestHourIndex(hourly);
 
-    ui.day.textContent = hourly?.time?.[idx] ?? "—";
+    ui.day.textContent = hourly?.time?.[idx] ?? "";
+    const iso = hourly?.time?.[idx] ?? "";
+    const [d, t] = iso.split("T");
+    ui.day.innerHTML = `${d || "—"}<br>${t || "—"}`;
 
     const pm25 = pickAt(hourly, "pm2_5", idx);
     const pm10 = pickAt(hourly, "pm10", idx);
