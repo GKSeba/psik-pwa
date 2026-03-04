@@ -55,21 +55,21 @@ function pmCategory(pmType, value) {
 
   // PM2.5 24h: 0-10, 10-20, 20-25, 25-50, 50-75, 75-800
   if (pmType === "pm2_5") {
-    if (v <= 10) return "good";
-    if (v <= 20) return "fair";
-    if (v <= 35) return "moderate";
-    if (v <= 50) return "poor";
-    if (v <= 100) return "verypoor";
+    if (v <= 5) return "good";
+    if (v <= 15) return "fair";
+    if (v <= 50) return "moderate";
+    if (v <= 90) return "poor";
+    if (v <= 140) return "verypoor";
     return "extremelypoor";
   }
 
   // PM10 24h: 0-20, 20-40, 40-50, 50-100, 100-150, 150-1200
   if (pmType === "pm10") {
-    if (v <= 20) return "good";
-    if (v <= 40) return "fair";
-    if (v <= 50) return "moderate";
-    if (v <= 100) return "poor";
-    if (v <= 150) return "verypoor";
+    if (v <= 15) return "good";
+    if (v <= 45) return "fair";
+    if (v <= 120) return "moderate";
+    if (v <= 195) return "poor";
+    if (v <= 270) return "verypoor";
     return "extremelypoor";
   }
 
@@ -106,11 +106,11 @@ function pollenCategory(allergenKey, value) {
 }
 
 const categoryLabelPL = {
-  good: "Super",
-  fair: "OK",
-  moderate: "W miarę",
+  good: "Petarda",
+  fair: "Super",
+  moderate: "OK",
   poor: "Kiepsko",
-  verypoor: "Źle!",
+  verypoor: "Źle",
   extremelypoor: "Nie wychodź!",
   pollen: "gr/m³",
   ok: "OK",
