@@ -111,7 +111,7 @@ const categoryLabelPL = {
   pollen: "gr/m³",
   ok: "OK",
   medium: "Kichasz?",
-  alarm: "Coś swędzi",
+  alarm: "Już swędzi!",
   extreme: "Dramat!",
 };
 
