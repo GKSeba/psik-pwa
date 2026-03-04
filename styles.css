@@ -193,16 +193,13 @@ background: color-mix(in srgb, var(--c) 18%, rgba(0,0,0,.18));
 
 .footer{
 max-width: 980px;
-margin: 0 auto 28px;
+margin: 14px auto 28px;
 padding: 14px 16px 0;
 color: rgba(255,255,255,.70);
 font-size: 12px;
 }
 .footer__row{
-display:flex;
-gap:10px;
-flex-wrap: wrap;
-align-items:center;
+justify-content: center;
 }
 .footer__sep{ opacity:.6; }
 .footer a{
