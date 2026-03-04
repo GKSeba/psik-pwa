@@ -41,6 +41,27 @@ letter-spacing: .2px;
 }
 .sub{ margin:6px 0 0; color: var(--muted); font-size: 10px; }
 
+.brand{
+display:flex;
+align-items:center;
+justify-content:center;   /* wyśrodkowanie całej pary */
+gap: 12px;
+margin: 30 auto;
+}
+
+.brand__logo{
+width: 70px;
+height: 70px;
+border-radius: 15px;      /* opcjonalnie ładny “rounded” */
+box-shadow: 0 8px 18px rgba(0,0,0,.35);
+}
+
+.brand__title{
+margin: 0;
+font-size: 45px;          /* dopasuj do swojego stylu */
+letter-spacing: .2px;
+}
+
 .card{
 max-width: 980px;
 margin: 12px auto 28px;
