@@ -5,7 +5,7 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self';
-connect-src 'self' https://air-quality-api.open-meteo.com;
+connect-src 'self' https://air-quality-api.open-meteo.com https://api.open-meteo.com;
 img-src 'self' data:;
 style-src 'self';
 script-src 'self';
@@ -61,17 +61,44 @@ upgrade-insecure-requests"
 
       <!-- WIDOK 1: TERAZ -->
       <section id="viewNow">
+        <section class="weatherNow">
+          <div class="weatherNow__content">
+            <div class="weatherNow__iconCol">
+              <img id="wxIcon" class="weatherNow__icon" alt="" />
+            </div>
+
+            <div class="weatherNow__textStack">
+              <div class="weatherNow__descCol">
+                <div id="wxDesc" class="weatherNow__desc">—</div>
+              </div>
+
+              <div class="weatherNow__statsCol">
+                <div class="weatherNow__line">
+                  <span class="weatherNow__k">Odczuwalna:</span>
+                  <span id="wxFeels" class="weatherNow__v">—</span>
+                </div>
+                <div class="weatherNow__line">
+                  <span class="weatherNow__k">Wiatr:</span>
+                  <span id="wxWind" class="weatherNow__v">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="weatherNow__right">
+            <button id="btnWeatherForecast" type="button">Pogoda 5 dni</button>
+          </div>
+        </section>
+
         <h2>Stan powietrza</h2>
         <div id="air" class="grid"></div>
-
-        <h2 style="margin-top: 14px">Pyłki</h2>
+        <h2 class="mt14">Pyłki</h2>
         <div id="pollen" class="grid"></div>
       </section>
 
       <!-- WIDOK 2: PROGNOZA -->
       <section id="viewForecast" class="hidden">
         <h2>Pyłki • Kolejne dni</h2>
-        <div id="forecastDays" class="forecastRow"></div>
+        <div id="forecastDays"></div>
       </section>
     </main>
     <footer class="footer">

@@ -15,6 +15,11 @@ const ui = {
   viewNow: $("viewNow"),
   viewForecast: $("viewForecast"),
   forecastDays: $("forecastDays"),
+  wxIcon: $("wxIcon"),
+  wxDesc: $("wxDesc"),
+  wxFeels: $("wxFeels"),
+  wxWind: $("wxWind"),
+  btnWeatherForecast: $("btnWeatherForecast"),
 };
 
 let loadCounter = 0;
@@ -28,6 +33,12 @@ function formatValue(v) {
   // lekko zaokrąglamy, żeby UI było czytelne
   const n = Number(v);
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+
+function windDirToText(deg) {
+  if (!Number.isFinite(deg)) return "";
+  const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  return dirs[Math.round(deg / 45) % 8];
 }
 
 /**
@@ -169,7 +180,149 @@ function renderTiles(containerEl, items) {
 //   });
 // }
 
-// ===== 4) Open‑Meteo Air Quality API (pyłki + PM + EU AQI) =====
+// ===== 4) Open‑Meteo Air Quality API (pogoda pyłki + PM + EU AQI) =====
+
+async function fetchWeather(latitude, longitude) {
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.searchParams.set("latitude", String(latitude));
+  url.searchParams.set("longitude", String(longitude));
+  url.searchParams.set("timezone", "auto");
+
+  // ważne: is_day
+  url.searchParams.set(
+    "current",
+    [
+      "weather_code",
+      "is_day",
+      "apparent_temperature",
+      "wind_speed_10m",
+      "wind_direction_10m",
+    ].join(","),
+  );
+
+  // pod przyszły widok 5 dni:
+  url.searchParams.set(
+    "daily",
+    [
+      "weather_code",
+      "temperature_2m_max",
+      "temperature_2m_min",
+      "wind_speed_10m_max",
+    ].join(","),
+  );
+  url.searchParams.set("forecast_days", "6"); // łatwo pominąć dziś
+
+  const res = await fetch(url);
+  const text = await res.text();
+  if (!res.ok) throw new Error(`Weather HTTP ${res.status}: ${text}`);
+  return JSON.parse(text);
+}
+
+// zjawiska
+
+function wxKindFromCode(code) {
+  code = Number(code);
+
+  if (code === 0) return "clear";
+  if (code >= 1 && code <= 3) return "clouds";
+  if (code === 45 || code === 48) return "fog";
+  if ((code >= 51 && code <= 57) || (code >= 80 && code <= 82))
+    return "showers";
+  if (code >= 61 && code <= 67) return "rain";
+  if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "snow";
+  if (code === 95) return "storm";
+  if (code >= 96 && code <= 99) return "stormhail";
+  return "unknown";
+}
+
+const WX_FILES = {
+  clear: {
+    day: "wi-day-sunny.svg",
+    night: "wi-night-clear.svg",
+    neutral: null,
+  },
+  clouds: {
+    day: "wi-day-cloudy.svg",
+    night: "wi-night-alt-cloudy.svg",
+    neutral: "wi-cloudy.svg",
+  },
+  fog: {
+    day: "wi-day-fog.svg",
+    night: "wi-night-fog.svg",
+    neutral: "wi-fog.svg",
+  },
+  showers: {
+    day: "wi-day-showers.svg",
+    night: "wi-night-alt-showers.svg",
+    neutral: "wi-showers.svg",
+  },
+  rain: {
+    day: "wi-day-rain.svg",
+    night: "wi-night-alt-rain.svg",
+    neutral: "wi-rain.svg",
+  },
+  snow: {
+    day: "wi-day-snow.svg",
+    night: "wi-night-alt-snow.svg",
+    neutral: "wi-snow.svg",
+  },
+  storm: {
+    day: "wi-day-thunderstorm.svg",
+    night: "wi-night-alt-thunderstorm.svg",
+    neutral: "wi-thunderstorm.svg",
+  },
+  stormhail: {
+    day: "\wi-storm-showers.svg",
+    night: "wi-night-alt-thunderstorm.svg",
+    neutral: "wi-night-alt-thunderstorm.svg",
+  },
+  unknown: {
+    day: "wi-day-cloudy.svg",
+    night: "wi-night-alt-cloudy.svg",
+    neutral: "wi-cloud.svg",
+  },
+};
+
+function wxIconPath({ code, isDay, mode = "auto" }) {
+  const kind = wxKindFromCode(Number(code));
+  const files = WX_FILES[kind] || WX_FILES.unknown;
+
+  // wybór folderu
+  const folder =
+    mode === "day"
+      ? "day"
+      : mode === "night"
+        ? "night"
+        : mode === "neutral"
+          ? "neutral"
+          : isDay
+            ? "day"
+            : "night";
+
+  // wybór pliku (neutral czasem nie istnieje -> fallback)
+  let file = files.neutral;
+  if (folder === "day") file = files.day;
+  if (folder === "night") file = files.night;
+  if (folder === "neutral") file = files.neutral || files.day; // fallback na day dla "clear"
+
+  return `./icons/weather/${folder}/${file}`;
+}
+
+function wxLabelPL(code) {
+  const kind = wxKindFromCode(code);
+  return {
+    clear: "Bezchmurnie",
+    clouds: "Zachmurzenie",
+    fog: "Mgła",
+    showers: "Przelotne opady",
+    rain: "Deszcz",
+    snow: "Śnieg",
+    storm: "Burza",
+    stormhail: "Grad",
+    unknown: `Pogoda (kod ${code})`,
+  }[kind];
+}
+
 async function fetchAirQuality(latitude, longitude) {
   const url = new URL("https://air-quality-api.open-meteo.com/v1/air-quality");
   url.searchParams.set("latitude", String(latitude));
@@ -294,7 +447,36 @@ function renderPollenForecast(days, units) {
   }).join("");
 }
 
+function formatInt(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return String(Math.round(n));
+}
+
+function renderWeatherNow(wxData) {
+  const c = wxData.current;
+  const isDay = c.is_day === 1;
+
+  const icon = wxIconPath({ code: c.weather_code, isDay, mode: "auto" });
+
+  ui.wxIcon.src = icon;
+  ui.wxIcon.alt = wxLabelPL(c.weather_code);
+  ui.wxDesc.textContent = wxLabelPL(c.weather_code);
+
+  const feelsUnit = wxData.current_units?.apparent_temperature ?? "°C";
+  ui.wxFeels.textContent = `${formatInt(c.apparent_temperature)} ${feelsUnit}`;
+
+  const windUnit = wxData.current_units?.wind_speed_10m ?? "km/h";
+  const dir = windDirToText(Number(c.wind_direction_10m));
+  ui.wxWind.textContent = `${formatValue(c.wind_speed_10m)} ${windUnit}${dir ? " " + dir : ""}`;
+}
+
+ui.btnWeatherForecast?.addEventListener("click", () => {
+  showForecast(); // albo docelowo showWeatherForecast()
+});
+
 // ===== 5) Główna funkcja =====
+
 async function loadForLocation({ name, latitude, longitude }) {
   const id = ++loadCounter;
   ui.place.textContent = name;
@@ -303,10 +485,16 @@ async function loadForLocation({ name, latitude, longitude }) {
   setMsg(`Pobieram dane… (#${id})`);
 
   try {
-    const data = await fetchAirQuality(latitude, longitude);
-    const hourly = data.hourly || {};
+    const [airData, wxData] = await Promise.all([
+      fetchAirQuality(latitude, longitude),
+      fetchWeather(latitude, longitude),
+    ]);
 
-    const units = { ...DEFAULT_UNITS, ...(data.hourly_units || {}) };
+    renderWeatherNow(wxData);
+
+    const hourly = airData.hourly || {};
+
+    const units = { ...DEFAULT_UNITS, ...(airData.hourly_units || {}) };
 
     // daty na podstawie hourly.time
     const allDates = [...new Set((hourly.time || []).map(toISODate))].filter(

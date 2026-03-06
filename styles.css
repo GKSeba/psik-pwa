@@ -25,6 +25,8 @@ background: none;
 position: relative;
 }
 
+.mt14 { margin-top: 14px; }
+
 .top{
 padding: 28px 16px 14px;
 max-width: 980px;
@@ -127,6 +129,78 @@ gap: 12px;
 }
 @media (min-width: 860px){
 .grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* wrapper: zawsze content + przycisk */
+/* zawsze: content + przycisk */
+
+/* Pogoda: wrapper = content + przycisk */
+.weatherNow{
+display: grid;
+grid-template-columns: 1fr auto;
+gap: 12px;
+align-items: center;
+
+margin: 6px 0 14px;
+padding: 12px 14px;
+border-radius: 16px;
+background: rgba(255,255,255,.06);
+border: 1px solid rgba(255,255,255,.14);
+}
+
+.weatherNow__right{ justify-self: end; }
+
+.weatherNow__content{
+display: grid;
+grid-template-columns: 64px 1fr;
+column-gap: 8px;
+align-items: center;
+min-width: 0;
+}
+
+.weatherNow__iconCol{
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.weatherNow__icon{
+transform: scale(1.50);
+transform-origin: center;
+}
+
+.weatherNow__textStack{
+display: flex;
+flex-direction: column;
+justify-content: center;
+gap: 2px; /* mniejszy odstęp opis -> odczuwalna */
+min-width: 0;
+}
+
+.weatherNow__desc{ font-size: 22px; font-weight: 850; }
+.weatherNow__line{ font-size: 16px; color: var(--muted); margin-top: 2px; }
+.weatherNow__k{ opacity: .9; }
+.weatherNow__v{ color: var(--text); font-weight: 800; margin-left: 6px; }
+
+@media (min-width: 768px){
+.weatherNow__content{
+grid-template-columns: 72px max-content max-content;
+column-gap: 24px; /* regulujesz odstęp opis <-> statsy */
+justify-content: start; /* wyrównanie do lewej */
+}
+
+.weatherNow__textStack{ display: contents; }
+
+.weatherNow__descCol{ grid-column: 2; }
+.weatherNow__statsCol{
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.weatherNow__statsCol .weatherNow__line{ margin-top: 0; }
 }
 
 .tile{
@@ -335,8 +409,7 @@ background: rgba(106,27,154,.18);
 
 .miniTile{
 position: relative;
-overflow: hidden;
-}
+overflow: hidden;}
 
 /* mapowanie kategorii na --c (tak jak dla .tile) */
 .miniTile.ok { --c:#2e7d32; }
