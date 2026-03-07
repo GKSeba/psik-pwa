@@ -1,4 +1,4 @@
-const CACHE_NAME = "pollen-pwa-v21";
+const CACHE_NAME = "pollen-pwa-v22";
 const APP_SHELL = [
   "./",
   "./index.html",

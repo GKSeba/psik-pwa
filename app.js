@@ -180,7 +180,10 @@ async function fetchWeather(latitude, longitude) {
   url.searchParams.set("latitude", String(latitude));
   url.searchParams.set("longitude", String(longitude));
   url.searchParams.set("timezone", "auto");
-  url.searchParams.set("hourly", ["weather_code", "is_day"].join(","));
+  url.searchParams.set(
+    "hourly",
+    ["weather_code", "is_day", "apparent_temperature"].join(","),
+  );
   url.searchParams.set("forecast_hours", "48");
 
   url.searchParams.set(
@@ -412,7 +415,7 @@ function renderNextHoursStrip(wxData) {
   }
 
   if (firstChange === -1) {
-    ui.wxStability.textContent = "Stabilnie ~6h";
+    ui.wxStability.textContent = "Nie zanosi się na zmianę";
   } else {
     const inH = firstChange - idx0; // tu już jest w godzinach, bo indeks = 1h
     const fromLabel = wxLabelPL(
@@ -423,7 +426,7 @@ function renderNextHoursStrip(wxData) {
   }
 
   ui.wxNextHours.innerHTML = "";
-  for (let i = idx0; i < end; i += step) {
+  for (let i = idx0 + step; i < end; i += step) {
     const code = hourly.weather_code?.[i];
     const isDay = hourly.is_day?.[i] === 1;
     const icon = wxIconPath({ code, isDay, mode: "auto" });
@@ -432,10 +435,16 @@ function renderNextHoursStrip(wxData) {
     div.className = `wxHour${i === firstChange ? " change" : ""}`;
     div.title = wxLabelPL(code);
 
+    const temp = hourly.apparent_temperature?.[i];
+    const tempText = Number.isFinite(Number(temp))
+      ? `${Math.round(Number(temp))}°`
+      : "—";
+
     div.innerHTML = `
-    <div class="wxHour__t">${hourHHMM(hourly.time[i])}</div>
-    <img class="wxHour__icon" src="${icon}" alt="" />
-  `;
+<div class="wxHour__t">${hourHHMM(hourly.time[i])}</div>
+<img class="wxHour__icon" src="${icon}" alt="" />
+<div class="wxHour__temp">${tempText}</div>
+`;
 
     ui.wxNextHours.appendChild(div);
   }

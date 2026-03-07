@@ -260,6 +260,13 @@ margin: 0 auto;
 opacity: .95;
 }
 
+.wxHour__temp{
+margin-top: 6px;
+font-size: 13px;
+font-weight: 900;
+color: rgba(255,255,255,.92);
+}
+
 /* wyróżnij pierwszy “moment zmiany” */
 .wxHour.change{
 border-color: color-mix(in srgb, var(--accent2) 55%, rgba(255,255,255,.16));
