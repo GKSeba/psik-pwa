@@ -62,6 +62,7 @@ upgrade-insecure-requests"
       <!-- WIDOK 1: TERAZ -->
       <section id="viewNow">
         <section class="weatherNow">
+          <!-- ROW 1: pogoda + przycisk -->
           <div class="weatherNow__content">
             <div class="weatherNow__iconCol">
               <img id="wxIcon" class="weatherNow__icon" alt="" />
@@ -84,8 +85,26 @@ upgrade-insecure-requests"
               </div>
             </div>
           </div>
+
           <div class="weatherNow__right">
-            <button id="btnWeatherForecast" type="button">Pogoda 5 dni</button>
+            <button
+              id="btnWeatherForecast"
+              type="button"
+              aria-label="Prognoza na kolejne dni"
+              title="Pokaż kolejne dni"
+            >
+              ➜
+            </button>
+          </div>
+
+          <!-- ROW 2: prognoza godzinowa -->
+          <div class="wxHint">
+            <div id="wxStability" class="wxStability">—</div>
+            <div
+              id="wxNextHours"
+              class="wxStrip"
+              aria-label="Prognoza na najbliższe godziny"
+            ></div>
           </div>
         </section>
 
@@ -122,7 +141,7 @@ upgrade-insecure-requests"
       class="fab"
       type="button"
       aria-label="Pokaż prognozę"
-      title="Prognoza"
+      title="Prognoza pylenia"
     >
       Prognoza
     </button>

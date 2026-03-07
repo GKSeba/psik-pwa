@@ -137,7 +137,10 @@ gap: 12px;
 /* Pogoda: wrapper = content + przycisk */
 .weatherNow{
 display: grid;
-grid-template-columns: 1fr auto;
+grid-template-columns: 1fr auto; /* content | button */
+grid-template-areas:
+  "content button"
+  "hint    hint";
 gap: 12px;
 align-items: center;
 
@@ -148,11 +151,17 @@ background: rgba(255,255,255,.06);
 border: 1px solid rgba(255,255,255,.14);
 }
 
-.weatherNow__right{ justify-self: end; }
+.weatherNow__content{ grid-area: content; }
+.weatherNow__right{ grid-area: button; justify-self: end; }
+.wxHint{ grid-area: hint; margin-top: 2px; }
+
+.weatherNow__right button{
+white-space: nowrap;
+}
 
 .weatherNow__content{
 display: grid;
-grid-template-columns: 64px 1fr;
+grid-template-columns: 52px 1fr;
 column-gap: 8px;
 align-items: center;
 min-width: 0;
@@ -161,7 +170,7 @@ min-width: 0;
 .weatherNow__iconCol{
 display: flex;
 align-items: center;
-justify-content: center;
+justify-content: center; 
 }
 
 .weatherNow__icon{
@@ -173,20 +182,22 @@ transform-origin: center;
 display: flex;
 flex-direction: column;
 justify-content: center;
-gap: 2px; /* mniejszy odstęp opis -> odczuwalna */
+gap: 2px; 
 min-width: 0;
+margin-left: 10px;
 }
 
-.weatherNow__desc{ font-size: 22px; font-weight: 850; }
-.weatherNow__line{ font-size: 16px; color: var(--muted); margin-top: 2px; }
+.weatherNow__desc{ font-size: 20px; font-weight: 850; }
+.weatherNow__line{ font-size: 15px; color: var(--muted); margin-top: 2px; }
 .weatherNow__k{ opacity: .9; }
 .weatherNow__v{ color: var(--text); font-weight: 800; margin-left: 6px; }
 
+/* DESKTOP >=1024: 3 kolumny w content: ikona | opis | statsy (bliżej siebie) */
 @media (min-width: 768px){
 .weatherNow__content{
-grid-template-columns: 72px max-content max-content;
-column-gap: 24px; /* regulujesz odstęp opis <-> statsy */
-justify-content: start; /* wyrównanie do lewej */
+  grid-template-columns: 56px max-content max-content;
+  column-gap: 30px;
+  justify-content: start;
 }
 
 .weatherNow__textStack{ display: contents; }
@@ -199,8 +210,60 @@ justify-content: start; /* wyrównanie do lewej */
   justify-content: center;
   gap: 6px;
 }
-
 .weatherNow__statsCol .weatherNow__line{ margin-top: 0; }
+
+.wxStrip{ scrollbar-width:none; -ms-overflow-style:none; }
+.wxStrip::-webkit-scrollbar{ display:none; }
+
+}
+
+/* Pasek godzinowy: 12 kafelków, scroll jeśli trzeba */
+.wxStability{
+font-size: 12px;
+color: var(--muted);
+margin: 5px 0 8px 5px;
+text-align: left;
+}
+
+.wxStrip{
+display: flex;
+justify-content: flex-start;
+gap: 8px;
+overflow-x: auto;
+padding: 2px 2px 10px;
+scroll-snap-type: x mandatory;
+-webkit-overflow-scrolling: touch;
+}
+
+.wxHour{
+flex: 0 0 auto;
+width: clamp(64px, 14vw, 92px);  /* skaluje się */
+border-radius: 14px;
+border: 1px solid rgba(255,255,255,.14);
+background: rgba(255,255,255,.05);
+padding: 8px 8px 7px;
+scroll-snap-align: start;
+text-align: center;
+}
+
+.wxHour__t{
+font-size: 11px;
+color: var(--muted);
+margin-bottom: 6px;
+}
+
+.wxHour__icon{
+width: 26px;
+height: 26px;
+display: block;
+margin: 0 auto;
+opacity: .95;
+}
+
+/* wyróżnij pierwszy “moment zmiany” */
+.wxHour.change{
+border-color: color-mix(in srgb, var(--accent2) 55%, rgba(255,255,255,.16));
+background: color-mix(in srgb, var(--accent2) 16%, rgba(255,255,255,.05));
 }
 
 .tile{

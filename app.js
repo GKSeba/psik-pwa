@@ -20,6 +20,8 @@ const ui = {
   wxFeels: $("wxFeels"),
   wxWind: $("wxWind"),
   btnWeatherForecast: $("btnWeatherForecast"),
+  wxNextHours: $("wxNextHours"),
+  wxStability: $("wxStability"),
 };
 
 let loadCounter = 0;
@@ -30,7 +32,6 @@ function setMsg(text) {
 
 function formatValue(v) {
   if (v == null || Number.isNaN(v)) return "—";
-  // lekko zaokrąglamy, żeby UI było czytelne
   const n = Number(v);
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
@@ -41,14 +42,6 @@ function windDirToText(deg) {
   return dirs[Math.round(deg / 45) % 8];
 }
 
-/**
- * Fallback jednostek:
- * - PM: i tak zwykle przychodzą w hourly_units jako µg/m³
- * - Pyłki: ustawiamy "gr/m³" jeśli API nie poda
- *
- * Uwaga merytoryczna: często spotyka się "grains/m³" (ziarna/m³),
- * ale zostawiam "gr/m³" zgodnie z Twoją prośbą.
- */
 const DEFAULT_UNITS = {
   pm2_5: "µg/m³",
   pm10: "µg/m³",
@@ -187,8 +180,9 @@ async function fetchWeather(latitude, longitude) {
   url.searchParams.set("latitude", String(latitude));
   url.searchParams.set("longitude", String(longitude));
   url.searchParams.set("timezone", "auto");
+  url.searchParams.set("hourly", ["weather_code", "is_day"].join(","));
+  url.searchParams.set("forecast_hours", "48");
 
-  // ważne: is_day
   url.searchParams.set(
     "current",
     [
@@ -210,7 +204,7 @@ async function fetchWeather(latitude, longitude) {
       "wind_speed_10m_max",
     ].join(","),
   );
-  url.searchParams.set("forecast_days", "6"); // łatwo pominąć dziś
+  url.searchParams.set("forecast_days", "6");
 
   const res = await fetch(url);
   const text = await res.text();
@@ -299,11 +293,10 @@ function wxIconPath({ code, isDay, mode = "auto" }) {
             ? "day"
             : "night";
 
-  // wybór pliku (neutral czasem nie istnieje -> fallback)
   let file = files.neutral;
   if (folder === "day") file = files.day;
   if (folder === "night") file = files.night;
-  if (folder === "neutral") file = files.neutral || files.day; // fallback na day dla "clear"
+  if (folder === "neutral") file = files.neutral || files.day;
 
   return `./icons/weather/${folder}/${file}`;
 }
@@ -367,6 +360,85 @@ function pickClosestHourIndex(hourly) {
     }
   }
   return best;
+}
+
+function pickCurrentHourIndexFromTimes(times) {
+  if (!Array.isArray(times) || times.length === 0) return 0;
+
+  const now = Date.now();
+  let best = 0;
+
+  for (let i = 0; i < times.length; i++) {
+    const t = new Date(times[i]).getTime();
+    if (Number.isNaN(t)) continue;
+    if (t <= now) best = i;
+    else break;
+  }
+  return best;
+}
+
+function hourHHMM(iso) {
+  // "2026-03-04T14:00" -> "14:00"
+  const t = (iso || "").split("T")[1];
+  return t ? t.slice(0, 5) : "—";
+}
+
+function renderNextHoursStrip(wxData) {
+  if (!ui.wxNextHours || !ui.wxStability) return;
+
+  const hourly = wxData.hourly;
+  if (!hourly || !Array.isArray(hourly.time)) {
+    ui.wxStability.textContent = "Brak danych godzinowych pogody";
+    ui.wxNextHours.innerHTML = "";
+    return;
+  }
+
+  const idx0 = pickCurrentHourIndexFromTimes(hourly.time);
+  const step = 2; // co 2 godziny
+  const take = 10; // 6 kafelków
+  const end = Math.min(idx0 + step * take, hourly.time.length);
+
+  const kindNow = wxKindFromCode(
+    wxData.current?.weather_code ?? hourly.weather_code?.[idx0],
+  );
+
+  let firstChange = -1;
+  for (let i = idx0 + step; i < end; i += step) {
+    const kind = wxKindFromCode(hourly.weather_code?.[i]);
+    if (kind && kind !== kindNow) {
+      firstChange = i;
+      break;
+    }
+  }
+
+  if (firstChange === -1) {
+    ui.wxStability.textContent = "Stabilnie ~6h";
+  } else {
+    const inH = firstChange - idx0; // tu już jest w godzinach, bo indeks = 1h
+    const fromLabel = wxLabelPL(
+      wxData.current?.weather_code ?? hourly.weather_code?.[idx0],
+    );
+    const toLabel = wxLabelPL(hourly.weather_code?.[firstChange]);
+    ui.wxStability.textContent = `Zmiana za ~${inH}h: ${fromLabel} → ${toLabel}`;
+  }
+
+  ui.wxNextHours.innerHTML = "";
+  for (let i = idx0; i < end; i += step) {
+    const code = hourly.weather_code?.[i];
+    const isDay = hourly.is_day?.[i] === 1;
+    const icon = wxIconPath({ code, isDay, mode: "auto" });
+
+    const div = document.createElement("div");
+    div.className = `wxHour${i === firstChange ? " change" : ""}`;
+    div.title = wxLabelPL(code);
+
+    div.innerHTML = `
+    <div class="wxHour__t">${hourHHMM(hourly.time[i])}</div>
+    <img class="wxHour__icon" src="${icon}" alt="" />
+  `;
+
+    ui.wxNextHours.appendChild(div);
+  }
 }
 
 function pickAt(hourly, key, idx) {
@@ -492,6 +564,8 @@ async function loadForLocation({ name, latitude, longitude }) {
 
     renderWeatherNow(wxData);
 
+    renderNextHoursStrip(wxData);
+
     const hourly = airData.hourly || {};
 
     const units = { ...DEFAULT_UNITS, ...(airData.hourly_units || {}) };
@@ -526,7 +600,7 @@ async function loadForLocation({ name, latitude, longitude }) {
     ui.day.textContent = hourly?.time?.[idx] ?? "";
     const iso = hourly?.time?.[idx] ?? "";
     const [d, t] = iso.split("T");
-    ui.day.innerHTML = `${d || "—"}<br>${t || "—"}`;
+    ui.day.textContent = `${d || "—"} ${t || "—"}`;
 
     const pm25 = pickAt(hourly, "pm2_5", idx);
     const pm10 = pickAt(hourly, "pm10", idx);
