@@ -86,17 +86,6 @@ upgrade-insecure-requests"
             </div>
           </div>
 
-          <div class="weatherNow__right">
-            <button
-              id="btnWeatherForecast"
-              type="button"
-              aria-label="Prognoza na kolejne dni"
-              title="Pokaż kolejne dni"
-            >
-              ➜
-            </button>
-          </div>
-
           <!-- ROW 2: prognoza godzinowa -->
           <div class="wxHint">
             <div id="wxStability" class="wxStability">—</div>
@@ -115,8 +104,15 @@ upgrade-insecure-requests"
       </section>
 
       <!-- WIDOK 2: PROGNOZA -->
+      <section class="weatherCard">
+        <div class="weatherCard__head">
+          <h2 class="weatherCard__title">Pogoda (5 dni)</h3>
+        </div>
+        <div id="weatherDays" class="weatherDays"></div>
+      </section>
+
       <section id="viewForecast" class="hidden">
-        <h2>Pyłki • Kolejne dni</h2>
+        <h2>Pyłki (kolejne dni)</h2>
         <div id="forecastDays"></div>
       </section>
     </main>

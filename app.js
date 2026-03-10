@@ -19,9 +19,9 @@ const ui = {
   wxDesc: $("wxDesc"),
   wxFeels: $("wxFeels"),
   wxWind: $("wxWind"),
-  btnWeatherForecast: $("btnWeatherForecast"),
   wxNextHours: $("wxNextHours"),
   wxStability: $("wxStability"),
+  weatherDays: $("weatherDays"),
 };
 
 let loadCounter = 0;
@@ -221,7 +221,9 @@ function wxKindFromCode(code) {
   code = Number(code);
 
   if (code === 0) return "clear";
-  if (code >= 1 && code <= 3) return "clouds";
+  if (code === 1) return "mainly_clear"; // gł. bezchmurnie
+  if (code === 2) return "partly_cloudy"; // częściowe zachmurzenie
+  if (code === 3) return "overcast"; // zachmurzenie całkowite
   if (code === 45 || code === 48) return "fog";
   if ((code >= 51 && code <= 57) || (code >= 80 && code <= 82))
     return "showers";
@@ -238,10 +240,20 @@ const WX_FILES = {
     night: "wi-night-clear.svg",
     neutral: null,
   },
-  clouds: {
+  mainly_clear: {
+    day: "wi-day-sunny-overcast.svg", // masz w day
+    night: "wi-night-alt-partly-cloudy.svg", // masz w night
+    neutral: null, // fallback na day (bo neutral słonecznych brak)
+  },
+  partly_cloudy: {
     day: "wi-day-cloudy.svg",
     night: "wi-night-alt-cloudy.svg",
-    neutral: "wi-cloudy.svg",
+    neutral: "wi-cloud.svg", // masz w neutral
+  },
+  overcast: {
+    day: "wi-day-cloudy-high.svg", // masz w day
+    night: "wi-night-alt-cloudy-high.svg", // masz w night
+    neutral: "wi-cloudy.svg", // masz w neutral
   },
   fog: {
     day: "wi-day-fog.svg",
@@ -281,40 +293,34 @@ const WX_FILES = {
 };
 
 function wxIconPath({ code, isDay, mode = "auto" }) {
-  const kind = wxKindFromCode(Number(code));
+  const kind = wxKindFromCode(code);
   const files = WX_FILES[kind] || WX_FILES.unknown;
 
-  // wybór folderu
-  const folder =
-    mode === "day"
-      ? "day"
-      : mode === "night"
-        ? "night"
-        : mode === "neutral"
-          ? "neutral"
-          : isDay
-            ? "day"
-            : "night";
+  if (mode === "neutral") {
+    if (files.neutral) return `./icons/weather/neutral/${files.neutral}`;
+    return `./icons/weather/day/${files.day}`;
+  }
 
-  let file = files.neutral;
-  if (folder === "day") file = files.day;
-  if (folder === "night") file = files.night;
-  if (folder === "neutral") file = files.neutral || files.day;
-
-  return `./icons/weather/${folder}/${file}`;
+  // day/night/auto
+  if (mode === "day") return `./icons/weather/day/${files.day}`;
+  if (mode === "night") return `./icons/weather/night/${files.night}`;
+  return isDay
+    ? `./icons/weather/day/${files.day}`
+    : `./icons/weather/night/${files.night}`;
 }
 
 function wxLabelPL(code) {
   const kind = wxKindFromCode(code);
   return {
     clear: "Bezchmurnie",
-    clouds: "Zachmurzenie",
+    mainly_clear: "Głównie bezchmurnie",
+    partly_cloudy: "Częściowe zachmurzenie",
+    overcast: "Zachmurzenie",
     fog: "Mgła",
     showers: "Przelotne opady",
     rain: "Deszcz",
     snow: "Śnieg",
     storm: "Burza",
-    stormhail: "Grad",
     unknown: `Pogoda (kod ${code})`,
   }[kind];
 }
@@ -456,6 +462,59 @@ function pickAt(hourly, key, idx) {
   return arr[idx] ?? null;
 }
 
+function fmtDateDDMM(dateStr) {
+  const [y, m, d] = (dateStr || "").split("-");
+  return d && m ? `${d}.${m}` : dateStr;
+}
+
+function renderWeatherForecast5Days(wxData) {
+  if (!ui.weatherDays) return;
+
+  const daily = wxData.daily;
+  if (!daily || !Array.isArray(daily.time)) {
+    ui.weatherDays.innerHTML = "";
+    return;
+  }
+
+  // forecast_days=6 -> [0]=dziś, [1..5]=kolejne 5 dni
+  const start = 1;
+  const end = Math.min(6, daily.time.length);
+
+  ui.weatherDays.innerHTML = "";
+
+  for (let i = start; i < end; i++) {
+    const date = daily.time[i];
+    const code = daily.weather_code?.[i];
+
+    const tMax = daily.temperature_2m_max?.[i];
+    const tMin = daily.temperature_2m_min?.[i];
+    const windMax = daily.wind_speed_10m_max?.[i];
+
+    const icon = wxIconPath({ code, isDay: true, mode: "neutral" }); // neutral dla daily
+
+    const el = document.createElement("div");
+    el.className = "weatherDay";
+    el.innerHTML = `
+    <div class="weatherDay__date">${fmtDateDDMM(date)}</div>
+    <div class="weatherDay__main">
+      <img class="weatherDay__icon" src="${icon}" alt="" />
+      <div>
+        <div class="weatherDay__temps">
+          ${Number.isFinite(Number(tMax)) ? Math.round(Number(tMax)) : "—"}° /
+          ${Number.isFinite(Number(tMin)) ? Math.round(Number(tMin)) : "—"}°
+        </div>
+        <div class="weatherDay__desc">${wxLabelPL(code)}</div>
+      </div>
+    </div>
+    <div class="weatherDay__desc">
+      Wiatr max: ${Number.isFinite(Number(windMax)) ? Math.round(Number(windMax)) : "—"}
+      ${wxData.daily_units?.wind_speed_10m_max ?? "km/h"}
+    </div>
+  `;
+    ui.weatherDays.appendChild(el);
+  }
+}
+
 //dodany kod
 const POLLEN_KEYS = [
   "grass_pollen",
@@ -552,12 +611,7 @@ function renderWeatherNow(wxData) {
   ui.wxWind.textContent = `${formatValue(c.wind_speed_10m)} ${windUnit}${dir ? " " + dir : ""}`;
 }
 
-ui.btnWeatherForecast?.addEventListener("click", () => {
-  showForecast(); // albo docelowo showWeatherForecast()
-});
-
 // ===== 5) Główna funkcja =====
-
 async function loadForLocation({ name, latitude, longitude }) {
   const id = ++loadCounter;
   ui.place.textContent = name;
@@ -572,6 +626,7 @@ async function loadForLocation({ name, latitude, longitude }) {
     ]);
 
     renderWeatherNow(wxData);
+    renderWeatherForecast5Days(wxData);
 
     renderNextHoursStrip(wxData);
 
@@ -736,34 +791,27 @@ function showNow() {
   showingForecast = false;
   ui.viewNow.classList.remove("hidden");
   ui.viewForecast.classList.add("hidden");
+
   ui.fabToggle.textContent = "Prognoza";
-  ui.fabToggle.setAttribute("aria-label", "Pokaż prognozę");
   ui.fabToggle.title = "Prognoza";
+  ui.fabToggle.setAttribute("aria-label", "Pokaż prognozę");
 }
 
 function showForecast() {
   showingForecast = true;
   ui.viewNow.classList.add("hidden");
   ui.viewForecast.classList.remove("hidden");
+
   ui.fabToggle.textContent = "Wróć";
-  ui.fabToggle.setAttribute("aria-label", "Wróć do ekranu głównego");
   ui.fabToggle.title = "Wróć";
+  ui.fabToggle.setAttribute("aria-label", "Wróć do ekranu głównego");
 }
 
-ui.fabToggle?.addEventListener("click", () => {
-  console.log("FAB CLICK", {
-    fab: !!ui.fabToggle,
-    viewNow: !!ui.viewNow,
-    viewForecast: !!ui.viewForecast,
-  });
-
-  if (!ui.viewNow || !ui.viewForecast) {
-    alert("Brakuje viewNow/viewForecast w HTML (sprawdź id).");
-    return;
-  }
-
+ui.fabToggle.onclick = () => {
   if (showingForecast) showNow();
   else showForecast();
-});
+};
+
+showNow();
 
 showNow();

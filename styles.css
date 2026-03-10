@@ -134,6 +134,92 @@ gap: 12px;
 /* wrapper: zawsze content + przycisk */
 /* zawsze: content + przycisk */
 
+/*Prognoza pogody*/
+
+.forecastSectionTitle{
+margin: 14px 0 10px;
+font-size: 20px;
+color: var(--muted);
+font-weight: 850;
+}
+
+.weatherDays{
+display: flex;
+gap: 10px;
+overflow-x: auto;
+padding: 6px 2px 10px;
+width: 100%;
+scroll-snap-type: x mandatory;
+-webkit-overflow-scrolling: touch;
+}
+
+.weatherCard{
+margin: 10px 0 14px;
+padding: 12px 14px;
+border-radius: 16px;
+background: rgba(255,255,255,.06);
+border: 1px solid rgba(255,255,255,.14);
+}
+
+.weatherCard__head{
+display:flex;
+align-items:center;
+justify-content: space-between;
+margin-bottom: 8px;
+}
+
+.weatherCard__title{
+margin: 0;
+font-size: 24px;
+font-weight: 700;
+color: #FFF;
+}
+
+.weatherDays{ scrollbar-width:none; -ms-overflow-style:none; }
+.weatherDays::-webkit-scrollbar{ display:none; }
+
+.weatherDay{
+flex: 0 0 auto;
+width: clamp(150px, 34vw, 220px);
+scroll-snap-align: start;
+border-radius: 16px;
+padding: 12px;
+border: 1px solid rgba(255,255,255,.14);
+background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+}
+
+.weatherDay__date{
+font-size: 12px;
+color: var(--muted);
+margin-bottom: 8px;
+}
+
+.weatherDay__main{
+display:flex;
+align-items:center;
+gap: 10px;
+margin-bottom: 8px;
+}
+
+.weatherDay__icon{
+width: 34px;
+height: 34px;
+display:block;
+opacity: .95;
+}
+
+.weatherDay__temps{
+font-weight: 900;
+font-size: 16px;
+line-height: 1.1;
+}
+
+.weatherDay__desc{
+font-size: 12px;
+color: var(--muted);
+margin-top: 6px;
+}
+
 /* Pogoda: wrapper = content + przycisk */
 .weatherNow{
 display: grid;
