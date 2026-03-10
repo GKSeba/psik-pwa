@@ -104,18 +104,20 @@ upgrade-insecure-requests"
       </section>
 
       <!-- WIDOK 2: PROGNOZA -->
-      <section class="weatherCard">
+      
+
+      <section id="viewForecast" class="hidden">
+        <section class="weatherCard">
         <div class="weatherCard__head">
           <h2 class="weatherCard__title">Pogoda (5 dni)</h3>
         </div>
         <div id="weatherDays" class="weatherDays"></div>
       </section>
-
-      <section id="viewForecast" class="hidden">
         <h2>Pyłki (kolejne dni)</h2>
         <div id="forecastDays"></div>
       </section>
     </main>
+    <!--Footer-->
     <footer class="footer">
       <div class="footer__row">
         <span>© <span id="year"></span> GKSeba</span>
