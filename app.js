@@ -202,8 +202,8 @@ async function fetchWeather(latitude, longitude) {
     "daily",
     [
       "weather_code",
-      "temperature_2m_max",
-      "temperature_2m_min",
+      "apparent_temperature_max",
+      "apparent_temperature_min",
       "wind_speed_10m_max",
     ].join(","),
   );
@@ -486,8 +486,8 @@ function renderWeatherForecast5Days(wxData) {
     const date = daily.time[i];
     const code = daily.weather_code?.[i];
 
-    const tMax = daily.temperature_2m_max?.[i];
-    const tMin = daily.temperature_2m_min?.[i];
+    const tMax = daily.apparent_temperature_max?.[i];
+    const tMin = daily.apparent_temperature_min?.[i];
     const windMax = daily.wind_speed_10m_max?.[i];
 
     const icon = wxIconPath({ code, isDay: true, mode: "neutral" }); // neutral dla daily
